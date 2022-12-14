@@ -1,0 +1,40 @@
+import os
+import glob
+import zipfile
+import pathlib
+
+def clean_cache():
+    new_dir = "C:\\Users\\t_the\\Desktop\\Winc Data Analyse met Python 31-05-22\\Winc\\files\\cache"
+    contents_cache = glob.glob("C:\\Users\\t_the\\Desktop\\Winc Data Analyse met Python 31-05-22\\Winc\\files\\cache\\*")
+    if not os.path.exists(new_dir):
+        os.mkdir(new_dir)
+    else:
+        for f in contents_cache:
+            os.remove(f)
+
+clean_cache()
+
+def cache_zip(zip_file_path, cache_dir_path):   
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(cache_dir_path)
+
+cache_zip("C:\\Users\\t_the\\Desktop\\Winc Data Analyse met Python 31-05-22\\Winc\\files\\data.zip", "C:\\Users\\t_the\\Desktop\\Winc Data Analyse met Python 31-05-22\\Winc\\files\\cache")
+
+def cached_files():
+    cache = pathlib.Path("C:\\Users\\t_the\\Desktop\\Winc Data Analyse met Python 31-05-22\\Winc\\files\\cache")
+    file_list = []
+    for item in cache.rglob("*"):
+        if item.is_file():
+            file_list.append(os.path.abspath(item))
+    return file_list
+
+def find_password(files_in_cache):
+    files_in_cache = cached_files()
+    for file in files_in_cache:
+        with open(file, "r") as content:
+            lines = content.readlines()
+            for line in lines:
+                if "password" in line:
+                    return line[10:-1]
+
+print(find_password(cached_files()))
