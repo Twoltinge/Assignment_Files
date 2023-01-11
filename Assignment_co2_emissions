@@ -1,0 +1,65 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Creating a dataframe of countries by CO2 emission (without non-countries and European Union)
+tables = pd.read_html("https://en.wikipedia.org/wiki/List_of_countries_by_carbon_dioxide_emissions")
+co2_emissions = tables[1]
+co2_emissions.columns = ['Country', '1990', '2005', '2017', '2017 % of world', '2017 vs 1990 change %', 'Per_land_area_CO2', 'Per_capita_CO2', 'Total_including_LUCF22', 'Total_excluding_LUCF23']
+co2_emissions = co2_emissions.dropna(subset=['Total_including_LUCF22'])
+co2_emissions = co2_emissions[co2_emissions['Country'].str.contains('European Union') == False]
+co2_emissions = co2_emissions.loc[3:, 'Country':'2017']
+co2_emissions
+
+# Graph 1: CO2 of the bigger countries
+# Creating a plot with the 5 biggest CO2 producers
+biggest_5 = co2_emissions.sort_values('2017', ascending=False).iloc[0:5, :]
+
+years = biggest_5.columns[1:]
+
+for index, row in biggest_5.iterrows():
+  plt.plot(years, row[1:], label=row[0])
+
+plt.legend()
+plt.xlabel('Year')
+plt.ylabel('CO2 emissions in Mt CO2')
+plt.title('CO2 emissions of the 5 biggest CO2 producers')
+plt.grid()
+plt.show()
+
+# Graph 2a: worst and best changers
+# Creating a plot with the 3 best and the 3 worst changers of CO2 emission
+co2_emissions['rel1990'] = co2_emissions.loc[:, '1990'] / co2_emissions.loc[:, '1990'] * 100
+co2_emissions['rel2005'] = co2_emissions.loc[:, '2005'] / co2_emissions.loc[:, '1990'] * 100
+co2_emissions['rel2017'] = co2_emissions.loc[:, '2017'] / co2_emissions.loc[:, '2005'] * 100
+rel_co2_emissions = co2_emissions.sort_values('rel2017').loc[:, ['Country', 'rel1990', 'rel2005', 'rel2017']]
+
+best_3_and_worst_3 = rel_co2_emissions.iloc[[0,1,2,-3,-2,-1]]
+
+rel_year = best_3_and_worst_3.columns[1:]
+
+for index, row in best_3_and_worst_3.iterrows():
+  plt.plot(rel_year, row[1:], label=row[0])
+
+plt.legend()
+plt.xlabel('Year')
+plt.ylabel('Relative CO2 emissions in %')
+plt.title('Relative change in CO2 emissions of the 3 best and 3 worst')
+plt.grid()
+plt.show()
+
+# Graph 2b: worst and best changers
+# Creating a plot with the 3 best and the 3 worst changers of CO2 emission of countries that had an emission of > 5 in 1990
+co2_emissions_above_5 = co2_emissions.loc[co2_emissions['1990'] >= 5]
+rel_co2_emissions_above_5 = co2_emissions_above_5.sort_values('rel2017').loc[:, ['Country', 'rel1990', 'rel2005', 'rel2017']]
+best_3_and_worst_3_above_5 = rel_co2_emissions_above_5.iloc[[0,1,2,-3,-2,-1]]
+rel_year_above_5 = best_3_and_worst_3_above_5.columns[1:]
+
+for index, row in best_3_and_worst_3_above_5.iterrows():
+  plt.plot(rel_year_above_5, row[1:], label=row[0])
+
+plt.legend()
+plt.xlabel('Year')
+plt.ylabel('Relative CO2 emissions in %')
+plt.title('Relative change in CO2 emissions of the 3 best \n and 3 worst of the countries that had >5 Mt in 1990')
+plt.grid()
+plt.show()
